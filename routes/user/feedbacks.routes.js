@@ -7,7 +7,7 @@ const {
   getFeedbacks,
   updateFeedback,
   deleteFeedback,
-  adminDeleteFeedback
+  adminDeleteFeedback,
 } = require("../../controllers/user/feedbacks.controller");
 
 FeedbacksRoutes.post("/addFeedback", userAuth, addFeedback);
