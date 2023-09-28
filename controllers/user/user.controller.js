@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../../models/user/user.model");
 const { SendEmail } = require("../../utils/emailConnection");
+const userEmail = require("./emails/userEmails");
 
 //Fuction for Genarate Confirmation URL
 const CreateConfirmationLink = async (email) => {
@@ -74,96 +75,7 @@ const UserRegistration = async (req, res) => {
         from: process.env.EMAIL_USERNAME,
         to: newUser.email,
         subject: "Account Confirmation",
-        html: ` <div
-        style="font-family: Roboto; background: white; overflow: hidden; margin-top:-100px"
-      >
-        <div
-          style="
-            position: relative;
-            margin: 0px auto;
-            width: 80%;
-            max-width: 400px;
-            padding: 20px;
-            box-shadow: 3px 10px 20px rgba(0, 0, 0, 0.2);
-            border-radius: 3px;
-            border: 0;
-          "
-        >
-          <div>
-            <div>
-            <h2
-              style="
-                text-align: center;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 24px;
-                letter-spacing: 0.6px;
-                font-weight: 300;
-              "
-            >
-           Hey ${newUser.firstName}! <br/> Welcome to Recruitement Website
-            </h2>
-            </div>
-          </div>
-          <div
-            style="
-              margin-top: 25px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              width: 100%;
-            "
-          >
-            <img
-              style="width: 100%;
-              display: flex;
-              justify-content: center;"
-              src="https://res.cloudinary.com/desnqqj6a/image/upload/v1657722063/Sign_up-bro_rjte42.png"
-              alt=""
-            />
-          </div>
-          <div
-            style="
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              flex-direction: column;
-            "
-          >
-            <div>
-              <h2
-                style="
-                  text-align: center;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-size: 18px;
-                  letter-spacing: 0.5px;
-                  font-weight: 300;
-                "
-              >
-                Please click on the link below to activate your account.
-              </h2>
-              <a href=${confirmUrl}>
-                <button
-                  style="
-                    width: 100%;
-                    padding: 8px;
-                    border-radius: 30px;
-                    border: 0;
-                    background: #17bf9e;
-                    color: #fff;
-                    margin-top: 20px;
-                  "
-                >
-                  Activate Account
-                </button>
-              </a>
-            </div>
-          </div>
-        </center>
-      </div>`,
+        html: userEmail.AccountConfirmationEmail(newUser.firstName, confirmUrl),
       };
 
       SendEmail(mailDetails);
@@ -207,98 +119,10 @@ const UserLogin = async (req, res) => {
             from: process.env.EMAIL_USERNAME,
             to: user.email,
             subject: "Account Confirmation",
-            html: `
-                  <div
-                    style="font-family: Roboto; background: white; overflow: hidden; margin-top:-100px"
-                  >
-                    <div
-                      style="
-                        position: relative;
-                        margin: 0px auto;
-                        width: 80%;
-                        max-width: 400px;
-                        padding: 20px;
-                        box-shadow: 3px 10px 20px rgba(0, 0, 0, 0.2);
-                        border-radius: 3px;
-                        border: 0;
-                      "
-                    >
-                      <div>
-                        <div>
-                        <h2
-                          style="
-                            text-align: center;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            font-size: 24px;
-                            letter-spacing: 0.6px;
-                            font-weight: 300;
-                          "
-                        >
-                       Hey ${user.firstName}! <br/> Welcome to Recruitement Website
-                        </h2>
-                        </div>
-                      </div>
-                      <div
-                        style="
-                          margin-top: 25px;
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          width: 100%;
-                        "
-                      >
-                        <img
-                          style="width: 100%;
-                          display: flex;
-                          justify-content: center;"
-                          src="https://res.cloudinary.com/desnqqj6a/image/upload/v1657722063/Sign_up-bro_rjte42.png"
-                          alt=""
-                        />
-                      </div>
-                      <div
-                        style="
-                          display: flex;
-                          align-items: center;
-                          justify-content: center;
-                          flex-direction: column;
-                        "
-                      >
-                        <div>
-                          <h2
-                            style="
-                              text-align: center;
-                              display: flex;
-                              align-items: center;
-                              justify-content: center;
-                              font-size: 18px;
-                              letter-spacing: 0.5px;
-                              font-weight: 300;
-                            "
-                          >
-                            Please click on the link below to activate your account.
-                          </h2>
-                          <a href=${confirmUrl}>
-                            <button
-                              style="
-                                width: 100%;
-                                padding: 8px;
-                                border-radius: 30px;
-                                border: 0;
-                                background: #17bf9e;
-                                color: #fff;
-                                margin-top: 20px;
-                              "
-                            >
-                              Activate Account
-                            </button>
-                          </a>
-                        </div>
-                      </div>
-                    </center>
-                  </div>
-              `,
+            html: userEmail.AccountConfirmationEmail(
+              user.firstName,
+              confirmUrl
+            ),
           };
 
           SendEmail(mailDetails);
@@ -312,9 +136,13 @@ const UserLogin = async (req, res) => {
           const token =
             "Bearer" +
             " " +
-            jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-              expiresIn: "2d",
-            });
+            jwt.sign(
+              { _id: user._id, role: user.role },
+              process.env.JWT_SECRET,
+              {
+                expiresIn: "2d",
+              }
+            );
 
           let oldTokens = user.tokens || [];
 
@@ -354,27 +182,28 @@ const GetUserProfile = async (req, res) => {
   try {
     const LogedUser = req.logedUser;
 
+    const user = await User.findById(LogedUser._id);
+
     const result = {
-      _id: LogedUser._id,
-      firstName: LogedUser.firstName,
-      lastName: LogedUser.lastName,
-      fullName: LogedUser.fullName,
-      email: LogedUser.email,
-      imageUrl: LogedUser.imageUrl,
-      cv: LogedUser.cv,
-      phoneNo: LogedUser.phoneNo,
-      heading: LogedUser.heading,
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      fullName: user.fullName,
+      email: user.email,
+      imageUrl: user.imageUrl,
+      cv: user.cv,
+      phoneNo: user.phoneNo,
+      heading: user.heading,
+      dob: user.dob,
+      address: user.address,
+      description: user.description,
+      fburl: user.fburl,
+      instaurl: user.instaurl,
+      lnkdinurl: user.lnkdinurl,
+      pturl: user.pturl,
+      tturl: user.tturl,
 
-      dob: LogedUser.dob,
-      address: LogedUser.address,
-      description: LogedUser.description,
-      fburl: LogedUser.fburl,
-      instaurl: LogedUser.instaurl,
-      lnkdinurl: LogedUser.lnkdinurl,
-      pturl: LogedUser.pturl,
-      tturl: LogedUser.tturl,
-
-      verified: LogedUser.verified,
+      verified: user.verified,
     };
 
     res.status(200);
@@ -388,10 +217,14 @@ const GetUserProfile = async (req, res) => {
 //Log Out
 const UserLogOut = async (req, res) => {
   try {
-    req.logedUser.tokens = req.logedUser.tokens.filter((token) => {
+    const userId = req.logedUser._id;
+
+    const user = await User.findById(userId);
+
+    user.tokens = user.tokens.filter((token) => {
       return token.token !== req.token;
     });
-    await req.logedUser.save();
+    await user.save();
 
     return res.status(200).send({
       success: true,
@@ -406,8 +239,11 @@ const UserLogOut = async (req, res) => {
 //Log out All devices
 const UserLogOutFromAllDevices = async (req, res) => {
   try {
-    req.logedUser.tokens = [];
-    await req.logedUser.save();
+    const userId = req.logedUser._id;
+
+    const user = await User.findById(userId);
+    user.tokens = [];
+    await user.save();
 
     return res.status(200).send({
       success: true,
@@ -466,46 +302,6 @@ const UpdateUser = async (req, res) => {
     res.send({ status: false, error: e.message });
   }
 };
-
-// //Upload Profile image
-// const UploadImg = async (req, res) => {
-//   try {
-//     const { imageUrl } = req.body;
-
-//     const updatedUser = await User.findByIdAndUpdate(req.logedUser._id, {
-//       imageUrl,
-//       lastUpdatedDate: GetNowDateAndTime(),
-//     });
-
-//     return res.status(200).send({
-//       success: true,
-//       message: "User Profile Image Uploaded Successfully",
-//     });
-//   } catch (e) {
-//     res.status(500);
-//     res.send({ status: false, error: e.message });
-//   }
-// };
-
-// //Upload CV to profile
-// const UploadCV = async (req, res) => {
-//     try {
-//       const { cv } = req.body;
-
-//       const updatedUser = await User.findByIdAndUpdate(req.logedUser._id, {
-//         cv,
-//         lastUpdatedDate: GetNowDateAndTime(),
-//       });
-
-//       return res.status(200).send({
-//         success: true,
-//         message: "User Profile Image Uploaded Successfully",
-//       });
-//     } catch (e) {
-//       res.status(500);
-//       res.send({ status: false, error: e.message });
-//     }
-//   };
 
 //genarate and send forgot password link
 const CheckUserEmailToForgotPassword = async (req, res) => {
@@ -675,8 +471,6 @@ module.exports = {
   UserLogOut,
   UserLogOutFromAllDevices,
   UpdateUser,
-  //UploadImg,
-  //UploadCV,
   DeleteUserAccount,
   UserEmailConfirmation,
   CheckUserEmailToForgotPassword,

@@ -27,6 +27,8 @@ const ApplyJob = async (req, res) => {
 
       SendEmail(mailDetails);
 
+      const user = await User.findById(LogedUser._id);
+
       const applyJobData = {
         userId: LogedUser._id,
         jobId: jobId,
@@ -39,7 +41,7 @@ const ApplyJob = async (req, res) => {
         appliedJobStatus: currentJob.jobStatus,
         appliedCompanyLocation: currentJob.location,
         appliedCompanyEmail: currentJob.comEmail,
-        appliedUser: LogedUser,
+        appliedUser: user,
       };
 
       const appliedJob = await AppliedJob.create(applyJobData);
@@ -66,16 +68,7 @@ const GetAllAppliedJobs = async (req, res) => {
   try {
     const AllAppliedJobs = await AppliedJob.find().sort({ createdAt: -1 });
 
-    if (AllAppliedJobs) {
-      return res
-        .status(200)
-        .send({ status: true, appliedjobs: AllAppliedJobs });
-    } else {
-      return res.status(400).send({
-        status: false,
-        message: "Somthing Went Wrong !",
-      });
-    }
+    return res.status(200).send({ status: true, appliedjobs: AllAppliedJobs });
   } catch (err) {
     return res.status(500).send({ status: false, message: err.message });
   }
@@ -89,16 +82,9 @@ const GetUserAppliedJobs = async (req, res) => {
       userId: LogedUser._id,
     }).sort({ createdAt: -1 });
 
-    if (userAppliedJobs) {
-      return res
-        .status(200)
-        .send({ status: true, userAppliedjobs: userAppliedJobs });
-    } else {
-      return res.status(400).send({
-        status: false,
-        message: "Somthing Went Wrong !",
-      });
-    }
+    return res
+      .status(200)
+      .send({ status: true, userAppliedjobs: userAppliedJobs });
   } catch (err) {
     return res.status(500).send({ status: false, message: err.message });
   }

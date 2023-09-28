@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 const savedjobsSchema = new mongoose.Schema(
   {
     jobID: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "job",
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "job",
+    },
 
     userID: {
       type: mongoose.Schema.Types.ObjectId,
@@ -13,12 +13,9 @@ const savedjobsSchema = new mongoose.Schema(
 
     jobDetails: {
       type: Object,
-      
     },
-
   },
-  {timestamps:true}
-  
+  { timestamps: true, versionKey: false }
 );
 
 const savedjobs = mongoose.model("savedjobs", savedjobsSchema);

@@ -5,17 +5,18 @@ const User = require("../../models/user/feedbacks.model");
 const addFeedback = async (req, res) => {
   try {
     let { rating, comment } = req.body;
-    const user = req.logedUser;
+    const userId = req.logedUser;
+    const user = await User.findById(userId);
 
     if (!user) {
-      res.status(500);
+      res.status(404);
       res.send({ status: false, message: "No User" });
     }
 
     let feedback = {
-      userId: req.logedUser._id,
-      imageUrl: req.logedUser.imageUrl,
-      fullName: req.logedUser.fullName,
+      userId: req.user._id,
+      imageUrl: req.user.imageUrl,
+      fullName: req.user.fullName,
       rating: rating,
       comment: comment,
     };
@@ -47,7 +48,7 @@ const getFeedbacks = async (req, res) => {
     const feedbacks = await Feedback.find();
 
     if (feedbacks.length == 0) {
-      res.status(500);
+      res.status(404);
       res.send({ status: false, message: "No Feedbacks" });
     }
 
@@ -99,23 +100,7 @@ const getFeedbacks = async (req, res) => {
           break;
       }
     }
-    const ratings = [
-      // one: one,
-      // oneAndHalf: oneAndHalf,
-      // two: two,
-      // twoAndHalf: twoAndHalf,
-      // three: three,
-      // threeAndHalf: threeAndHalf,
-      // four: four,
-      // fourAndHalf: fourAndHalf,
-      // five: five,
-      // ratings: feedbacks.length,
-      one,
-      two,
-      three,
-      four,
-      five,
-    ];
+    const ratings = [one, two, three, four, five];
 
     res.status(200).send({
       status: true,
@@ -140,7 +125,7 @@ const updateFeedback = async (req, res) => {
     const user = req.logedUser;
 
     if (!user) {
-      res.status(500);
+      res.status(404);
       res.send({ status: false, message: "No User" });
     }
 
@@ -155,7 +140,7 @@ const updateFeedback = async (req, res) => {
       );
       res.status(200).send({ status: true, feedbacks: updateFeedbck });
     } else {
-      res.status(500);
+      res.status(400);
       res.send({ status: false, message: "Invalid User" });
     }
   } catch (err) {
@@ -178,7 +163,7 @@ const deleteFeedback = async (req, res) => {
     const user = req.logedUser;
 
     if (!user) {
-      res.status(500);
+      res.status(404);
       res.send({ status: false, message: "No User" });
     }
 
@@ -190,7 +175,7 @@ const deleteFeedback = async (req, res) => {
       const deleteFeedback = await Feedback.findByIdAndDelete(feedbackID);
       res.status(200).send({ status: true, feedbacks: deleteFeedback });
     } else {
-      res.status(500);
+      res.status(400);
       res.send({ status: false, message: "Invalid User" });
     }
   } catch (err) {
@@ -206,7 +191,7 @@ const adminDeleteFeedback = async (req, res) => {
   try {
     const feedback = await Feedback.findById(feedbackID);
     if (!feedback) {
-      res.status(500);
+      res.status(404);
       res.send({ status: false, message: "There is no feedback" });
     }
 
