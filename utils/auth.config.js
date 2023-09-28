@@ -3,6 +3,7 @@ const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const FacebookStrategy = require("passport-facebook").Strategy;
 const User = require("../models/user/user.model");
+
 // Configure Google Strategy
 passport.use(
   new GoogleStrategy(
@@ -47,12 +48,39 @@ passport.use(
 passport.use(
   new FacebookStrategy(
     {
-      clientID: "YOUR_FACEBOOK_APP_ID",
-      clientSecret: "YOUR_FACEBOOK_APP_SECRET",
+      clientID: process.env.FACEBOOK_CLIENT_ID,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
       callbackURL: "/auth/facebook/callback",
+      profileFields: ["id", "displayName", "emails", "link", "photos", "name"],
     },
-    (accessToken, refreshToken, profile, done) => {
-      // Add your logic to handle Facebook authentication here
+    async (accessToken, refreshToken, profile, done) => {
+      const { name, emails, photos, displayName } = profile;
+
+      const user = await User.findOne({ facebookId: profile.id });
+
+      if (!user) {
+        const newUser = new User({
+          facebookId: profile.id,
+          firstName: name.givenName,
+          lastName: name.familyName,
+          fullName: displayName,
+          email: "",
+          imageUrl: photos[0].value,
+          verified: true,
+          role: "User",
+        });
+
+        await newUser
+          .save()
+          .then((user) => {
+            return done(null, user);
+          })
+          .catch((err) => {
+            return done(err);
+          });
+      } else {
+        return done(null, user);
+      }
     }
   )
 );
