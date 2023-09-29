@@ -6,6 +6,9 @@ const dotenv = require("dotenv").config();
 const passport = require("passport");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
+const mongoSanitize = require("express-mongo-sanitize");
+const xss = require("xss-clean");
+const helmet = require("helmet");
 
 const { connection } = require("./utils/dbConnection");
 const RequestMapping = require("./mapping");
@@ -16,9 +19,23 @@ const errorHandlerMiddleware = require("./error/error.middleware");
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+//Sanitize data
+app.use(
+  mongoSanitize({
+    replaceWith: "_",
+    allowDots: true,
+  })
+);
+
+//Prevent XSS attacks
+app.use(xss());
+
+// Use Helmet!
+app.use(helmet());
 
 const corsOptions = {
   origin: "http://localhost:3000",

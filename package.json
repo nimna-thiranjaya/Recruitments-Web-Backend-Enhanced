@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@braintree/sanitize-url": "^6.0.4",
     "bcrypt": "^5.0.1",
     "body-parser": "^1.20.0",
     "cookie-parser": "^1.4.6",
@@ -19,16 +20,20 @@
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "express-async-errors": "^3.1.1",
+    "express-mongo-sanitize": "^2.2.0",
     "express-session": "^1.17.3",
+    "helmet": "^7.0.0",
     "http-status-codes": "^2.3.0",
     "jsonwebtoken": "^8.5.1",
+    "mongo-sanitize": "^1.1.0",
     "mongoose": "^6.4.3",
     "node-datetime": "^2.1.2",
     "nodemailer": "^6.7.7",
     "passport": "^0.6.0",
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "xss-clean": "^0.1.4"
   },
   "devDependencies": {
     "nodemon": "^2.0.19"

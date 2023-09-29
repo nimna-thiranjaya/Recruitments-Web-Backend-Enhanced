@@ -1,9 +1,10 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+var sanitize = require("mongo-sanitize");
+const clean = require("xss-clean/lib/xss").clean;
 const User = require("../../models/user/user.model");
 const { SendEmail } = require("../../utils/emailConnection");
 const userEmail = require("./emails/userEmails");
-const NotFoundError = require("../../error/error.classes/NotFoundError");
 const BadRequestError = require("../../error/error.classes/BadRequestError");
 
 //Fuction for Genarate Confirmation URL
@@ -55,8 +56,6 @@ const UserEmailConfirmation = async (req, res) => {
 const UserRegistration = async (req, res) => {
   const body = req.body;
   const newUser = new User(body);
-
-  console.log(newUser);
 
   const emailCheck = await User.findOne({ email: body.email });
   if (!emailCheck) {
@@ -201,7 +200,6 @@ const GetUserProfile = async (req, res) => {
       lnkdinurl: user.lnkdinurl,
       pturl: user.pturl,
       tturl: user.tturl,
-
       verified: user.verified,
     };
 
@@ -339,6 +337,9 @@ const CheckUserEmailToForgotPassword = async (req, res) => {
 //Reset password using forgot password link
 const UserPasswordForgot = async (req, res) => {
   try {
+    console.log(clean(req.params));
+    console.log(sanitize(req.params));
+
     const ResetLink = req.params.Link;
     const { password } = req.body;
 
