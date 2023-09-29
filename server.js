@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+require("express-async-errors");
 const dotenv = require("dotenv").config();
 const passport = require("passport");
 const session = require("express-session");
@@ -10,6 +11,8 @@ const { connection } = require("./utils/dbConnection");
 const RequestMapping = require("./mapping");
 
 require("./utils/auth.config");
+
+const errorHandlerMiddleware = require("./error/error.middleware");
 
 const app = express();
 
@@ -39,6 +42,9 @@ app.use(passport.session());
 
 //Request mappings
 RequestMapping(app);
+
+//Error handling middleware
+app.use(errorHandlerMiddleware);
 
 const PORT = process.env.PORT || 5000;
 

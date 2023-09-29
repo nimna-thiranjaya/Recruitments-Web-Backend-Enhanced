@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../../models/user/user.model");
 const { SendEmail } = require("../../utils/emailConnection");
 const userEmail = require("./emails/userEmails");
+const NotFoundError = require("../../error/error.classes/NotFoundError");
+const BadRequestError = require("../../error/error.classes/BadRequestError");
 
 //Fuction for Genarate Confirmation URL
 const CreateConfirmationLink = async (email) => {
@@ -51,49 +53,46 @@ const UserEmailConfirmation = async (req, res) => {
 
 //User Account Creation
 const UserRegistration = async (req, res) => {
-  try {
-    const { firstName, lastName, email, phoneNo, password } = req.body;
+  const body = req.body;
+  const newUser = new User(body);
 
-    const emailCheck = await User.findOne({ email: email });
-    if (!emailCheck) {
-      const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_SALT));
+  console.log(newUser);
 
-      const hashedPassword = await bcrypt.hash(password, salt);
-      const newUser = await User.create({
-        firstName,
-        lastName,
-        fullName: firstName + " " + lastName,
-        email,
-        phoneNo,
-        password: hashedPassword,
-        role: "User",
-      });
+  const emailCheck = await User.findOne({ email: body.email });
+  if (!emailCheck) {
+    const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_SALT));
 
-      const confirmUrl = await CreateConfirmationLink(newUser.email);
+    const hashedPassword = await bcrypt.hash(body.password, salt);
 
-      let mailDetails = {
-        from: process.env.EMAIL_USERNAME,
-        to: newUser.email,
-        subject: "Account Confirmation",
-        html: userEmail.AccountConfirmationEmail(newUser.firstName, confirmUrl),
-      };
+    newUser.password = hashedPassword;
+    newUser.fullName = newUser.firstName + " " + newUser.lastName;
+    newUser.role = "User";
 
-      SendEmail(mailDetails);
-
-      return res.status(201).send({
-        success: true,
-        email: newUser.email,
-        message:
-          "User Account Creation Successful, Account verification link send",
-      });
-    } else {
-      return res.status(400).send({
-        success: false,
-        message: "Email Already Exists",
-      });
+    try {
+      await newUser.save();
+    } catch (e) {
+      throw e;
     }
-  } catch (e) {
-    return res.status(500).send({ success: false, error: e.message });
+
+    const confirmUrl = await CreateConfirmationLink(newUser.email);
+
+    let mailDetails = {
+      from: process.env.EMAIL_USERNAME,
+      to: newUser.email,
+      subject: "Account Confirmation",
+      html: userEmail.AccountConfirmationEmail(newUser.firstName, confirmUrl),
+    };
+
+    SendEmail(mailDetails);
+
+    return res.status(201).send({
+      success: true,
+      email: newUser.email,
+      message:
+        "User Account Creation Successful, Account verification link send",
+    });
+  } else {
+    throw new BadRequestError("Email Already Exists");
   }
 };
 

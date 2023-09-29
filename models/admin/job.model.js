@@ -3,25 +3,25 @@ const jobSchema = new mongoose.Schema(
   {
     jobTitle: {
       type: String,
-      require: true,
+      required: [true, "Job title is required!"],
       trim: true,
     },
 
     companyName: {
       type: String,
-      require: true,
+      required: [true, "Company name is required!"],
       trim: true,
     },
 
     location: {
       type: String,
-      require: true,
+      required: [true, "Location is required!"],
       trim: true,
     },
 
     jobStatus: {
       type: String,
-      require: true,
+      required: [true, "Job status is required!"],
       trim: true,
     },
 
@@ -53,7 +53,13 @@ const jobSchema = new mongoose.Schema(
 
     comEmail: {
       type: String,
-      require: true,
+      required: [true, "Company email is required!"],
+      validate: {
+        validator: function (v) {
+          return /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/.test(v);
+        },
+        message: (props) => `Invalid email address!`,
+      },
       trim: true,
     },
 
@@ -74,29 +80,29 @@ const jobSchema = new mongoose.Schema(
 
     webSiteUrl: {
       type: String,
-      require: true,
+      required: [true, "Web site url is required!"],
       trim: true,
     },
 
     postedDate: {
       type: Date,
-      require: true,
+      required: [true, "Posted date is required!"],
       trim: true,
     },
 
     category: {
       type: String,
-      require: true,
+      required: [true, "Category is required!"],
     },
 
     subCategory: {
       type: String,
-      require: true,
+      required: [true, "Sub category is required!"],
     },
 
     expDate: {
       type: Date,
-      require: true,
+      required: [true, "Expire date is required!"],
       trim: true,
     },
 

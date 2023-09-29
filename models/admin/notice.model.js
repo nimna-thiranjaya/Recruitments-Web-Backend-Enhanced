@@ -3,19 +3,19 @@ const noticeSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      require: true,
+      required: [true, "Title is required!"],
       trim: true,
     },
 
     description: {
       type: String,
-      require: true,
+      required: [true, "Description is required!"],
       trim: true,
     },
 
     imageUrlPoster: {
       type: String,
-      require: true,
+      required: [true, "Image is required!"],
       trim: true,
     },
 
@@ -29,12 +29,12 @@ const noticeSchema = new mongoose.Schema(
     },
     postedDate: {
       type: Date,
-      require: true,
+      required: [true, "Posted Date is required!"],
       trim: true,
     },
     expDate: {
       type: Date,
-      require: true,
+      required: [true, "Expire Date is required!"],
       trim: true,
     },
   },
