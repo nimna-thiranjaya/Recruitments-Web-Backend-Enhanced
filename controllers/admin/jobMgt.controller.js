@@ -2,84 +2,82 @@ const Job = require("../../models/admin/job.model");
 
 //Create a new Job
 const CreateNewJob = async (req, res) => {
-  try {
-    //Get today date using specified timeZone
-    let Lanka_str = new Date().toLocaleString("en-US", {
-      timeZone: process.env.timeZone,
-    });
+  //Get today date using specified timeZone
+  let Lanka_str = new Date().toLocaleString("en-US", {
+    timeZone: process.env.timeZone,
+  });
 
-    const LogedAdmin = req.logedAdmin;
+  const LogedAdmin = req.logedAdmin;
 
-    //Convert date string to Date format
-    var today = new Date(Lanka_str);
+  //Convert date string to Date format
+  var today = new Date(Lanka_str);
 
-    //jobTitle, companyName, Location, jobType, description, postedby, comemail,
-    const {
-      jobTitle,
-      companyName,
-      location,
-      description,
-      descImgUrl,
-      about,
-      requirement,
-      jobType,
-      comEmail,
-      facebookUrl,
-      linkedInUrl,
-      twitterUrl,
-      webSiteUrl,
-      postedDate,
-      expDate,
-      jobUrgency,
-      category,
-      subCategory,
-    } = req.body;
+  //jobTitle, companyName, Location, jobType, description, postedby, comemail,
+  const {
+    jobTitle,
+    companyName,
+    location,
+    description,
+    descImgUrl,
+    about,
+    requirement,
+    jobType,
+    comEmail,
+    facebookUrl,
+    linkedInUrl,
+    twitterUrl,
+    webSiteUrl,
+    postedDate,
+    expDate,
+    jobUrgency,
+    category,
+    subCategory,
+  } = req.body;
 
-    //Genarate Job Status
-    if (new Date(postedDate) <= today && new Date(expDate) > today) {
-      var calcStatus = "Active";
-    } else if (new Date(postedDate) > today && new Date(expDate) > today) {
-      var calcStatus = "Pending";
-    } else if (new Date(postedDate) <= today && new Date(expDate) <= today) {
-      var calcStatus = "Disabled";
-    } else if (new Date(postedDate) >= today && new Date(expDate) <= today) {
-      var calcStatus = "Disabled";
-    }
-
-    data = {
-      jobTitle,
-      companyName,
-      location,
-      jobStatus: calcStatus,
-      description,
-      descImgUrl,
-      about,
-      requirement,
-      jobType,
-      comEmail,
-      facebookUrl,
-      linkedInUrl,
-      twitterUrl,
-      webSiteUrl,
-      postedDate,
-      expDate,
-      jobUrgency,
-      category,
-      subCategory,
-      adminID: LogedAdmin._id,
-    };
-
-    await Job.create(data);
-
-    return res
-      .status(200)
-      .send({ status: true, message: "Job created successful" });
-  } catch (err) {
-    return res.status(500).send({
-      success: false,
-      message: err,
-    });
+  //Genarate Job Status
+  if (new Date(postedDate) <= today && new Date(expDate) > today) {
+    var calcStatus = "Active";
+  } else if (new Date(postedDate) > today && new Date(expDate) > today) {
+    var calcStatus = "Pending";
+  } else if (new Date(postedDate) <= today && new Date(expDate) <= today) {
+    var calcStatus = "Disabled";
+  } else if (new Date(postedDate) >= today && new Date(expDate) <= today) {
+    var calcStatus = "Disabled";
   }
+
+  data = {
+    jobTitle,
+    companyName,
+    location,
+    jobStatus: calcStatus,
+    description,
+    descImgUrl,
+    about,
+    requirement,
+    jobType,
+    comEmail,
+    facebookUrl,
+    linkedInUrl,
+    twitterUrl,
+    webSiteUrl,
+    postedDate,
+    expDate,
+    jobUrgency,
+    category,
+    subCategory,
+    adminID: LogedAdmin._id,
+  };
+
+  const newJob = new Job(data);
+
+  try {
+    await newJob.save();
+  } catch (err) {
+    throw err;
+  }
+  return res
+    .status(200)
+    .send({ status: true, message: "Job created successful" });
 };
 
 //Delete existing job

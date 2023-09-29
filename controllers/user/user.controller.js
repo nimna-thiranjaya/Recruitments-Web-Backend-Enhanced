@@ -1,8 +1,11 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+var sanitize = require("mongo-sanitize");
+const clean = require("xss-clean/lib/xss").clean;
 const User = require("../../models/user/user.model");
 const { SendEmail } = require("../../utils/emailConnection");
 const userEmail = require("./emails/userEmails");
+const BadRequestError = require("../../error/error.classes/BadRequestError");
 
 //Fuction for Genarate Confirmation URL
 const CreateConfirmationLink = async (email) => {
@@ -51,49 +54,44 @@ const UserEmailConfirmation = async (req, res) => {
 
 //User Account Creation
 const UserRegistration = async (req, res) => {
-  try {
-    const { firstName, lastName, email, phoneNo, password } = req.body;
+  const body = req.body;
+  const newUser = new User(body);
 
-    const emailCheck = await User.findOne({ email: email });
-    if (!emailCheck) {
-      const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_SALT));
+  const emailCheck = await User.findOne({ email: body.email });
+  if (!emailCheck) {
+    const salt = await bcrypt.genSalt(parseInt(process.env.BCRYPT_SALT));
 
-      const hashedPassword = await bcrypt.hash(password, salt);
-      const newUser = await User.create({
-        firstName,
-        lastName,
-        fullName: firstName + " " + lastName,
-        email,
-        phoneNo,
-        password: hashedPassword,
-        role: "User",
-      });
+    const hashedPassword = await bcrypt.hash(body.password, salt);
 
-      const confirmUrl = await CreateConfirmationLink(newUser.email);
+    newUser.password = hashedPassword;
+    newUser.fullName = newUser.firstName + " " + newUser.lastName;
+    newUser.role = "User";
 
-      let mailDetails = {
-        from: process.env.EMAIL_USERNAME,
-        to: newUser.email,
-        subject: "Account Confirmation",
-        html: userEmail.AccountConfirmationEmail(newUser.firstName, confirmUrl),
-      };
-
-      SendEmail(mailDetails);
-
-      return res.status(201).send({
-        success: true,
-        email: newUser.email,
-        message:
-          "User Account Creation Successful, Account verification link send",
-      });
-    } else {
-      return res.status(400).send({
-        success: false,
-        message: "Email Already Exists",
-      });
+    try {
+      await newUser.save();
+    } catch (e) {
+      throw e;
     }
-  } catch (e) {
-    return res.status(500).send({ success: false, error: e.message });
+
+    const confirmUrl = await CreateConfirmationLink(newUser.email);
+
+    let mailDetails = {
+      from: process.env.EMAIL_USERNAME,
+      to: newUser.email,
+      subject: "Account Confirmation",
+      html: userEmail.AccountConfirmationEmail(newUser.firstName, confirmUrl),
+    };
+
+    SendEmail(mailDetails);
+
+    return res.status(201).send({
+      success: true,
+      email: newUser.email,
+      message:
+        "User Account Creation Successful, Account verification link send",
+    });
+  } else {
+    throw new BadRequestError("Email Already Exists");
   }
 };
 
@@ -202,7 +200,6 @@ const GetUserProfile = async (req, res) => {
       lnkdinurl: user.lnkdinurl,
       pturl: user.pturl,
       tturl: user.tturl,
-
       verified: user.verified,
     };
 
@@ -340,6 +337,9 @@ const CheckUserEmailToForgotPassword = async (req, res) => {
 //Reset password using forgot password link
 const UserPasswordForgot = async (req, res) => {
   try {
+    console.log(clean(req.params));
+    console.log(sanitize(req.params));
+
     const ResetLink = req.params.Link;
     const { password } = req.body;
 

@@ -3,32 +3,31 @@ const User = require("../../models/user/feedbacks.model");
 
 //add feedback
 const addFeedback = async (req, res) => {
-  try {
-    let { rating, comment } = req.body;
-    const userId = req.logedUser;
-    const user = await User.findById(userId);
+  let { rating, comment } = req.body;
+  const userId = req.logedUser;
+  const user = await User.findById(userId);
 
-    if (!user) {
-      res.status(404);
-      res.send({ status: false, message: "No User" });
-    }
-
-    let feedback = {
-      userId: req.user._id,
-      imageUrl: req.user.imageUrl,
-      fullName: req.user.fullName,
-      rating: rating,
-      comment: comment,
-    };
-
-    const newFeedback = new Feedback(feedback);
-    await newFeedback.save();
-
-    res.status(200).send({ status: true, feedbacks: newFeedback });
-  } catch (e) {
-    res.status(500);
-    res.send({ status: false, error: e.message });
+  if (!user) {
+    res.status(404);
+    res.send({ status: false, message: "No User" });
   }
+
+  let feedback = {
+    userId: req.user._id,
+    imageUrl: req.user.imageUrl,
+    fullName: req.user.fullName,
+    rating: rating,
+    comment: comment,
+  };
+
+  const newFeedback = new Feedback(feedback);
+  try {
+    await newFeedback.save();
+  } catch (err) {
+    throw err;
+  }
+
+  res.status(200).send({ status: true, feedbacks: newFeedback });
 };
 
 //get feedbacks

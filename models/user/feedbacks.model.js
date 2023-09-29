@@ -13,16 +13,16 @@ const feedbackSchema = new mongoose.Schema(
     },
     fullName: {
       type: String,
-      require: true,
+      require: [true, "Full Name is required!"],
       trim: true,
     },
     rating: {
       type: Number,
-      required: true,
+      required: [true, "Rating is required!"],
     },
     comment: {
       type: String,
-      required: true,
+      required: [true, "Comment is required!"],
     },
   },
   {

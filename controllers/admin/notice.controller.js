@@ -2,57 +2,58 @@ const Notice = require("../../models/admin/notice.model");
 
 //create notice-------------------------------------
 const CreateNotices = async (req, res) => {
-  try {
-    const {
-      title,
-      description,
-      imageUrlPoster,
-      imageUrlIcon,
-      postedDate,
-      expDate,
-    } = req.body;
+  const {
+    title,
+    description,
+    imageUrlPoster,
+    imageUrlIcon,
+    postedDate,
+    expDate,
+  } = req.body;
 
-    //Get today date using specified timeZone
-    let Lanka_str = new Date().toLocaleString("en-US", {
-      timeZone: process.env.timeZone,
-    });
+  //Get today date using specified timeZone
+  let Lanka_str = new Date().toLocaleString("en-US", {
+    timeZone: process.env.timeZone,
+  });
 
-    //Convert date string to Date format
-    var today = new Date(Lanka_str);
+  //Convert date string to Date format
+  var today = new Date(Lanka_str);
 
-    //Genarate Job Status
-    if (new Date(postedDate) <= today && new Date(expDate) > today) {
-      var calcStatus = "Active";
-    } else if (new Date(postedDate) > today && new Date(expDate) > today) {
-      var calcStatus = "Pending";
-    } else if (new Date(postedDate) <= today && new Date(expDate) <= today) {
-      var calcStatus = "Disabled";
-    } else if (new Date(postedDate) >= today && new Date(expDate) <= today) {
-      var calcStatus = "Disabled";
-    }
-
-    data = {
-      title,
-      description,
-      imageUrlPoster,
-      imageUrlIcon,
-      postedDate,
-      expDate,
-      noticeStatus: calcStatus,
-    };
-
-    await Notice.create(data);
-    return res
-      .status(200)
-      .send({ status: true, message: "Notice created successfully :)" });
-  } catch (err) {
-    return res.status(500).send({ success: false, message: err });
+  //Genarate Job Status
+  if (new Date(postedDate) <= today && new Date(expDate) > today) {
+    var calcStatus = "Active";
+  } else if (new Date(postedDate) > today && new Date(expDate) > today) {
+    var calcStatus = "Pending";
+  } else if (new Date(postedDate) <= today && new Date(expDate) <= today) {
+    var calcStatus = "Disabled";
+  } else if (new Date(postedDate) >= today && new Date(expDate) <= today) {
+    var calcStatus = "Disabled";
   }
+
+  data = {
+    title,
+    description,
+    imageUrlPoster,
+    imageUrlIcon,
+    postedDate,
+    expDate,
+    noticeStatus: calcStatus,
+  };
+
+  const newNotice = new Notice(data);
+
+  try {
+    await newNotice.save();
+  } catch (err) {
+    throw err;
+  }
+
+  return res
+    .status(200)
+    .send({ status: true, message: "Notice created successfully :)" });
 };
 
-
 //Get All Notices--------------------------------------
-
 const GetAllNotices = async (req, res) => {
   try {
     const AllNotices = await Notice.find().sort({ createdAt: -1 });
@@ -65,7 +66,6 @@ const GetAllNotices = async (req, res) => {
     });
   }
 };
-
 
 //Delete Specific Post----------------------------------
 const DeleteNotice = async (req, res) => {
@@ -164,51 +164,52 @@ const UpdateNotice = async (req, res) => {
   }
 };
 
-
 //Get All Active Notices--------------------------------------
 const GetAllActiveNotices = async (req, res) => {
   try {
-        //Get today date using specified timeZone
-        let Lanka_str = new Date().toLocaleString("en-US", {
-          timeZone: process.env.timeZone,
-        });
-    
-        //Convert date string to Date format
-        var date = new Date(Lanka_str);
-    
-        const pendingNotices = await Notice.find({ noticeStatus: "Pending" });
-    
-        if (pendingNotices.length > 0) {
-          for (var x = 0; x < pendingNotices.length; x++) {
-            if (pendingNotices[x].postedDate <= date) {
-              await Notice.findByIdAndUpdate(pendingNotices[x]._id, {
-                noticeStatus: "Active",
-              });
-            }
-          }
+    //Get today date using specified timeZone
+    let Lanka_str = new Date().toLocaleString("en-US", {
+      timeZone: process.env.timeZone,
+    });
+
+    //Convert date string to Date format
+    var date = new Date(Lanka_str);
+
+    const pendingNotices = await Notice.find({ noticeStatus: "Pending" });
+
+    if (pendingNotices.length > 0) {
+      for (var x = 0; x < pendingNotices.length; x++) {
+        if (pendingNotices[x].postedDate <= date) {
+          await Notice.findByIdAndUpdate(pendingNotices[x]._id, {
+            noticeStatus: "Active",
+          });
         }
-    //Get all Active notices from database
-        const activeNotices = await Notice.find({ noticeStatus: "Active" });
-    
-        //Check active notices are available in database
-        if (activeNotices.length > 0) {
-          for (var x = 0; x < activeNotices.length; x++) {
-            if (activeNotices[x].expDate <= date) {
-              await Notice.findByIdAndUpdate(activeNotices[x]._id, {
-                noticeStatus: "Disabled",
-              });
-            }
-          }
-        }
-         //Get All Active Jobs from database
-         const ActiveNotices = await Notice.find({ noticeStatus: "Active" }).sort({
-          createdAt: -1,
-        });
-    
-        return res.status(200).send({ status: true, allActivenotices: ActiveNotices });
-      } catch (err) {
-        return res.status(500).send({ success: false, message: err });
       }
+    }
+    //Get all Active notices from database
+    const activeNotices = await Notice.find({ noticeStatus: "Active" });
+
+    //Check active notices are available in database
+    if (activeNotices.length > 0) {
+      for (var x = 0; x < activeNotices.length; x++) {
+        if (activeNotices[x].expDate <= date) {
+          await Notice.findByIdAndUpdate(activeNotices[x]._id, {
+            noticeStatus: "Disabled",
+          });
+        }
+      }
+    }
+    //Get All Active Jobs from database
+    const ActiveNotices = await Notice.find({ noticeStatus: "Active" }).sort({
+      createdAt: -1,
+    });
+
+    return res
+      .status(200)
+      .send({ status: true, allActivenotices: ActiveNotices });
+  } catch (err) {
+    return res.status(500).send({ success: false, message: err });
+  }
 };
 
 module.exports = {

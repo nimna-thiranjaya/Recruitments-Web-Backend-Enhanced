@@ -18,4 +18,25 @@ AuthRouter.get(
   }
 );
 
+AuthRouter.get("/logout", (req, res) => {
+  req.logout();
+  res.clearCookie("recruitment");
+  res.redirect("http://localhost:3000/");
+});
+
+AuthRouter.get(
+  "/facebook",
+  passport.authenticate("facebook", { scope: ["email"] })
+);
+
+AuthRouter.get(
+  "/facebook/callback",
+  passport.authenticate("facebook"),
+  (req, res) => {
+    const token = helperUtil.createToken(req.user);
+    res.cookie("recruitment", token, { maxAge: 3600000 }); // Store JWT in a cookie
+    res.redirect("http://localhost:3000/Home");
+  }
+);
+
 module.exports = AuthRouter;
