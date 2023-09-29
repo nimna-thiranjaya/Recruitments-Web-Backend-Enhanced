@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 
 const userSchema = new mongoose.Schema(
   {
+    googleId: { type: String },
+    facebookId: { type: String },
     firstName: {
       type: String,
       require: true,
@@ -29,13 +31,11 @@ const userSchema = new mongoose.Schema(
 
     phoneNo: {
       type: String,
-      require: true,
       trim: true,
     },
 
     password: {
       type: String,
-      require: true,
       trim: true,
     },
 

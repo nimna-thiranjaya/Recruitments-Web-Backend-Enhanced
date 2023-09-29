@@ -1,4 +1,3 @@
-const jwt = require("jsonwebtoken");
 const helperUtil = require("../../utils/helper.util");
 // const userAuth = async (req, res, next) => {
 //   try {
@@ -28,9 +27,11 @@ const helperUtil = require("../../utils/helper.util");
 //   }
 // };
 
-const userAuth = async (req, res, next) => {
-  const authHeader = req.header("Authorization");
+const userAuth = (req, res, next) => {
+  // const authHeader = req.header("Authorization");
+  const authHeader = req.cookies.recruitment;
 
+  // console.log(authHeader);
   if (!authHeader || !authHeader.startsWith("Bearer")) {
     return res
       .status(401)

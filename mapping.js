@@ -7,6 +7,7 @@ const FeedbacksRoutes = require("./routes/user/feedbacks.routes");
 const SavedjobsRouter = require("./routes/user/savedjobs.routes");
 const UserRouter = require("./routes/user/user.routes");
 const ApplyJobRouter = require("./routes/user/appliedJob.routes");
+const AuthRouter = require("./routes/user/auth.routes");
 
 const RequestMapping = (app) => {
   app.use("/api/admin", AdminRouter);
@@ -18,6 +19,7 @@ const RequestMapping = (app) => {
   app.use("/api/dashboard", DashboardRouter);
   app.use("/api/feedbacks", FeedbacksRoutes);
   app.use("/api/savedjobs", SavedjobsRouter);
+  app.use("/auth", AuthRouter);
 };
 
 module.exports = RequestMapping;
