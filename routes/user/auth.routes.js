@@ -13,7 +13,11 @@ AuthRouter.get(
   passport.authenticate("google", { failureRedirect: "/" }),
   (req, res) => {
     const token = helperUtil.createToken(req.user);
-    res.cookie("recruitment", token, { maxAge: 3600000 }); // Store JWT in a cookie
+    res.cookie("recruitment", token, {
+      maxAge: 3600000,
+      httpOnly: true,
+      secure: true,
+    }); // Store JWT in a cookie
     res.redirect("http://localhost:3000/Home");
   }
 );

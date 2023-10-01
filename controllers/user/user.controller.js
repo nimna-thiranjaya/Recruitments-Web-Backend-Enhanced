@@ -6,6 +6,7 @@ const User = require("../../models/user/user.model");
 const { SendEmail } = require("../../utils/emailConnection");
 const userEmail = require("./emails/userEmails");
 const BadRequestError = require("../../error/error.classes/BadRequestError");
+const helperUtil = require("../../utils/helper.util");
 
 //Fuction for Genarate Confirmation URL
 const CreateConfirmationLink = async (email) => {
@@ -131,16 +132,22 @@ const UserLogin = async (req, res) => {
             message: "please confirm your email",
           });
         } else {
-          const token =
-            "Bearer" +
-            " " +
-            jwt.sign(
-              { _id: user._id, role: user.role },
-              process.env.JWT_SECRET,
-              {
-                expiresIn: "2d",
-              }
-            );
+          const token = helperUtil.createToken(user);
+          // "Bearer" +
+          //   " " +
+          //   jwt.sign(
+          //     { _id: user._id, role: user.role },
+          //     process.env.JWT_SECRET,
+          //     {
+          //       expiresIn: "2d",
+          //     }
+          //   );
+
+          res.cookie("recruitment", token, {
+            maxAge: 3600000,
+            httpOnly: true,
+            secure: true,
+          });
 
           let oldTokens = user.tokens || [];
 
