@@ -98,87 +98,59 @@ const UserRegistration = async (req, res) => {
 
 //User Login
 const UserLogin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    const user = await User.findOne({ email: email });
+  const user = await User.findOne({ email: email });
 
-    if (!user) {
-      return res.status(400).send({
-        success: false,
-        message: "Threre is no user account, Invalid email",
-      });
-    } else {
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (isMatch) {
-        if (!user.verified) {
-          const confirmUrl = await CreateConfirmationLink(email);
+  if (!user) {
+    throw new BadRequestError("There is no user account, Invalid email");
+  } else {
+    if (user.loginCount >= 3)
+      throw new BadRequestError(
+        "Your account is locked, Please contact admin!"
+      );
 
-          let mailDetails = {
-            from: process.env.EMAIL_USERNAME,
-            to: user.email,
-            subject: "Account Confirmation",
-            html: userEmail.AccountConfirmationEmail(
-              user.firstName,
-              confirmUrl
-            ),
-          };
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (isMatch) {
+      if (!user.verified) {
+        const confirmUrl = await CreateConfirmationLink(email);
 
-          SendEmail(mailDetails);
+        let mailDetails = {
+          from: process.env.EMAIL_USERNAME,
+          to: user.email,
+          subject: "Account Confirmation",
+          html: userEmail.AccountConfirmationEmail(user.firstName, confirmUrl),
+        };
 
-          return res.status(401).send({
-            isVerified: user.verified,
-            email: user.email,
-            message: "please confirm your email",
-          });
-        } else {
-          const token = helperUtil.createToken(user);
-          // "Bearer" +
-          //   " " +
-          //   jwt.sign(
-          //     { _id: user._id, role: user.role },
-          //     process.env.JWT_SECRET,
-          //     {
-          //       expiresIn: "2d",
-          //     }
-          //   );
+        SendEmail(mailDetails);
 
-          res.cookie("recruitment", token, {
-            maxAge: 3600000,
-            httpOnly: true,
-            secure: true,
-          });
-
-          let oldTokens = user.tokens || [];
-
-          if (oldTokens.length) {
-            oldTokens = oldTokens.filter((t) => {
-              const timeDiff = (Date.now() - parseInt(t.signedAt)) / 1000;
-              if (timeDiff < 86400 * 2) {
-                return t;
-              }
-            });
-          }
-
-          await User.findByIdAndUpdate(user._id, {
-            tokens: [...oldTokens, { token, signedAt: Date.now().toString() }],
-          });
-
-          return res.status(200).send({
-            isVerified: user.verified,
-            token: token,
-            role: user.role,
-          });
-        }
+        return res.status(401).send({
+          isVerified: user.verified,
+          email: user.email,
+          message: "please confirm your email",
+        });
       } else {
-        return res.status(400).send({
-          success: false,
-          message: "Invalid Password",
+        const token = helperUtil.createToken(user);
+        user.loginCount = 0;
+        await user.save();
+
+        res.cookie("recruitment", token, {
+          maxAge: 3600000,
+          httpOnly: true,
+          secure: true,
+        });
+
+        return res.status(200).send({
+          isVerified: user.verified,
+          token: token,
+          role: user.role,
         });
       }
+    } else {
+      user.loginCount = user.loginCount + 1;
+      await user.save();
+      throw new BadRequestError("Invalid Password");
     }
-  } catch (e) {
-    return res.status(500).send({ success: false, error: e.message });
   }
 };
 
