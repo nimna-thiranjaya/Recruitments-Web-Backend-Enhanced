@@ -97,66 +97,66 @@ const userSchema = new mongoose.Schema(
     fburl: {
       type: String,
       trim: true,
-      // validate: {
-      //   validator: (value) => {
-      //     return /^(https?:\/\/)?(www\.)?facebook\.com\/[a-zA-Z0-9_.-]+\/?$/.test(
-      //       value
-      //     );
-      //   },
-      //   message: "Invalid Facebook URL!",
-      // },
+      validate: {
+        validator: (value) => {
+          return /^(https?:\/\/)?(www\.)?facebook\.com\/[a-zA-Z0-9_.-]+\/?$/.test(
+            value
+          );
+        },
+        message: "Invalid Facebook URL!",
+      },
     },
 
     instaurl: {
       type: String,
       trim: true,
-      // validate: {
-      //   validator: (value) => {
-      //     return /^(https?:\/\/)?(www\.)?instagram\.com\/[a-zA-Z0-9_.-]+\/?$/.test(
-      //       value
-      //     );
-      //   },
-      //   message: "Invalid Instagram URL!",
-      // },
+      validate: {
+        validator: (value) => {
+          return /^(https?:\/\/)?(www\.)?instagram\.com\/[a-zA-Z0-9_.-]+\/?$/.test(
+            value
+          );
+        },
+        message: "Invalid Instagram URL!",
+      },
     },
 
     lnkdinurl: {
       type: String,
       trim: true,
-      // validate: {
-      //   validator: (value) => {
-      //     return /^(https?:\/\/)?(www\.)?linkedin\.com\/[a-zA-Z0-9_.-]+\/?$/.test(
-      //       value
-      //     );
-      //   },
-      //   message: "Invalid Linkedin URL!",
-      // },
+      validate: {
+        validator: (value) => {
+          return /^(https?:\/\/)?(www\.)?linkedin\.com\/[a-zA-Z0-9_.-]+\/?$/.test(
+            value
+          );
+        },
+        message: "Invalid Linkedin URL!",
+      },
     },
 
     pturl: {
       type: String,
       trim: true,
-      // validate: {
-      //   validator: (value) => {
-      //     return /^(https?:\/\/)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/\S*)?$/.test(
-      //       value
-      //     );
-      //   },
-      //   message: "Invalid Portfolio URL!",
-      // },
+      validate: {
+        validator: (value) => {
+          return /^(https?:\/\/)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/\S*)?$/.test(
+            value
+          );
+        },
+        message: "Invalid Portfolio URL!",
+      },
     },
 
     tturl: {
       type: String,
       trim: true,
-      // validate: {
-      //   validator: (value) => {
-      //     return /^(https?:\/\/)?(www\.)?twitter\.com\/[a-zA-Z0-9_.-]+\/?$/.test(
-      //       value
-      //     );
-      //   },
-      //   message: "Invalid Twitter URL!",
-      // },
+      validate: {
+        validator: (value) => {
+          return /^(https?:\/\/)?(www\.)?twitter\.com\/[a-zA-Z0-9_.-]+\/?$/.test(
+            value
+          );
+        },
+        message: "Invalid Twitter URL!",
+      },
     },
 
     role: {
@@ -177,6 +177,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       require: true,
       default: false,
+    },
+
+    loginCount: {
+      type: Number,
+      default: 0,
     },
 
     tokens: [{ type: Object }],

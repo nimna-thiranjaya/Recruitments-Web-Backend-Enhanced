@@ -105,9 +105,15 @@ const UserLogin = async (req, res) => {
     if (!user) {
       return res.status(400).send({
         success: false,
-        message: "Threre is no user account, Invalid email",
+        message: "There is no user account, Invalid email",
       });
     } else {
+      if (user.loginCount >= 3) {
+        return res.status(400).send({
+          success: false,
+          message: "Your account has been locked, please contact the admin!",
+        });
+      }
       const isMatch = await bcrypt.compare(password, user.password);
       if (isMatch) {
         if (!user.verified) {
@@ -131,6 +137,9 @@ const UserLogin = async (req, res) => {
             message: "please confirm your email",
           });
         } else {
+          user.loginCount = 0;
+          await user.save();
+
           const token =
             "Bearer" +
             " " +
@@ -157,6 +166,8 @@ const UserLogin = async (req, res) => {
             tokens: [...oldTokens, { token, signedAt: Date.now().toString() }],
           });
 
+          res.cookie("recruitment", token, { maxAge: 3600000 });
+
           return res.status(200).send({
             isVerified: user.verified,
             token: token,
@@ -164,6 +175,9 @@ const UserLogin = async (req, res) => {
           });
         }
       } else {
+        user.loginCount = user.loginCount + 1;
+        await user.save();
+
         return res.status(400).send({
           success: false,
           message: "Invalid Password",
