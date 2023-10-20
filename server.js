@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
 const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 
 const { connection } = require("./utils/dbConnection");
 const RequestMapping = require("./mapping");
@@ -36,6 +37,16 @@ app.use(xss());
 
 // Use Helmet!
 app.use(helmet());
+
+//Apply rate limiter to all requests
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, //1 mins
+  max: 100, //100 requests
+  message: "Too many requests from this IP, please try again in an hour!",
+});
+
+//Rate limiting
+app.use(limiter);
 
 const corsOptions = {
   origin: "http://localhost:3000",
