@@ -98,6 +98,9 @@ const UserRegistration = async (req, res) => {
 //User Login
 const UserLogin = async (req, res) => {
   try {
+    console.log("--------------------------------------------------------------------------------------------");
+    console.log("Print From User Login : ", req.body);
+    console.log("---------------------------------------------------------------------------------------------");
     const { email, password } = req.body;
 
     const user = await User.findOne({ email: email });
@@ -170,7 +173,7 @@ const UserLogin = async (req, res) => {
 
           return res.status(200).send({
             isVerified: user.verified,
-            token: token,
+            message: "Login Successful!",
             role: user.role,
           });
         }
@@ -351,10 +354,9 @@ const CheckUserEmailToForgotPassword = async (req, res) => {
 //Reset password using forgot password link
 const UserPasswordForgot = async (req, res) => {
   try {
-    console.log(clean(req.params));
-    console.log(sanitize(req.params));
+    const ResetLink = escape(req.params.Link);
 
-    const ResetLink = req.params.Link;
+    console.log(ResetLink);
     const { password } = req.body;
 
     try {

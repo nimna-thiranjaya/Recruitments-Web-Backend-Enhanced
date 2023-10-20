@@ -45,6 +45,13 @@ const userAuth = (req, res, next) => {
 
     try {
       payload = helperUtil.verifyToken(token);
+
+      if (payload.role != "User") {
+        return res.status(401).json({
+          status: false,
+          message: "You're unauthorized to access this resource!",
+        });
+      }
     } catch (error) {
       if (error.name === "TokenExpiredError") {
         return res
